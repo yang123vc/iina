@@ -162,21 +162,24 @@ class VideoView: NSView {
   func startDisplayLink() {
     guard let window = window else { return }
     let displayId = UInt32(window.screen!.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as! Int)
-    CVDisplayLinkCreateWithActiveCGDisplays(&link)
+    if link == nil {
+      CVDisplayLinkCreateWithActiveCGDisplays(&link)
+    }
     guard let link = link else {
       Logger.fatal("Cannot Create display link!")
     }
+    guard !CVDisplayLinkIsRunning(link) else { return }
     CVDisplayLinkSetCurrentCGDisplay(link, displayId)
     CVDisplayLinkSetOutputCallback(link, displayLinkCallback, mutableRawPointerOf(obj: player.mpv))
     CVDisplayLinkStart(link)
   }
 
-  func stopDisplaylink() {
+  func stopDisplayLink() {
     guard let link = link, CVDisplayLinkIsRunning(link) else { return }
     CVDisplayLinkStop(link)
   }
 
-  func updateDisplaylink() {
+  func updateDisplayLink() {
     guard let window = window, let link = link else { return }
     let displayId = UInt32(window.screen!.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as! Int)
     CVDisplayLinkSetCurrentCGDisplay(link, displayId)
